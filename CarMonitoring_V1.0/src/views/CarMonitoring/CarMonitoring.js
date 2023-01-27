@@ -9,6 +9,7 @@ import {
   Input,
   SkeletonText,
 } from "@chakra-ui/react";
+import Alert from 'react-bootstrap/Alert';
 import React, { Component, useEffect } from "react";
 import axios from "axios";
 import Dropdown from "react-dropdown";
@@ -31,6 +32,7 @@ import "react-confirm-alert/src/react-confirm-alert.css"; // Import css
 Geocode.setApiKey("AIzaSyCAV1aQa73wNEK3u2DYil1s3EseuXVnjcI");
 Geocode.enableDebug();
 
+var polyline;
 function App() {
   const [caraddress, setcaraddress] = useState("Loading ...");
   const [flag, setflag] = useState(0);
@@ -43,6 +45,7 @@ function App() {
   const [destinationValue, setdestinationValue] = useState("");
   const [locationStoredData, setlocationStoredData] = useState([]);
   const [focusFlag, setFocusFlag] = useState(false);
+  const [isFollowing,setisFollowing] = useState(false);
 
 
   const [orgincenter, setorgincenter] = useState({
@@ -96,6 +99,9 @@ function App() {
     }
   }, [flag, getflag,focusFlag]);
 
+
+
+
   async function getLocationData() {
     const getStocksData = {
       url: "http://localhost:5000/location",
@@ -106,8 +112,17 @@ function App() {
     };
     axios(getStocksData)
       .then((response) => {
-        console.log(response.data.data);
-        setlocationStoredData(response.data.data);
+        //console.log(response.data.data);
+        var locationArray = response.data.data.map((option,index)=>{
+          return {value:option,label:'Route '+index}
+        })
+       
+        console.log("Location Array : ",locationArray)
+
+
+
+        setlocationStoredData(locationArray);
+        
       })
       .catch(function (e) {
         console.log(e.message);
@@ -124,9 +139,15 @@ function App() {
     googleMapsApiKey: "AIzaSyCAV1aQa73wNEK3u2DYil1s3EseuXVnjcI",
     libraries: ["places"],
   });
+  
+
+  function onDirectionLoad (directionRendererInstance){
+    setDirectionInstance(directionRendererInstance);
+  }
 
   const [map, setMap] = useState(/** @type google.maps.Map */ (null));
   const [directionsResponse, setDirectionsResponse] = useState(null);
+  const [directionInstance, setDirectionInstance] = useState(null);
   const [topic_name, settopic_name] = useState("");
   const [car_alert, setcar_alert] = useState(0);
 
@@ -143,6 +164,8 @@ function App() {
     setFocusFlag(!focusFlag)
     getTopicData()
   }
+
+  
 
   async function getTopicData() {
     if (topic_name == "") {
@@ -185,6 +208,31 @@ function App() {
           };
           setcenter(new_location);
           setcenter2(new_location);
+
+          var myPosition = new google.maps.LatLng(new_location.lat,new_location.lng)
+
+          if(myPosition,polyline)
+          {
+            var isFollowing = google.maps.geometry.poly.isLocationOnEdge(myPosition,polyline,0.00001) //0.00001
+            setisFollowing(isFollowing)
+          }
+          
+          console.log("Is the car following the route? ",isFollowing)
+          
+          //setting an alert if the car is not on the path
+          //if(isFollowing===false)
+          if(isFollowing===false)
+          {
+            alert("The car is not following the path")
+          }
+
+          
+
+
+
+
+
+
           Geocode.fromLatLng(
             response.data.data.lat,
             response.data.data.lon
@@ -214,6 +262,7 @@ function App() {
   }
 
   async function calculateRoute() {
+    
     if (originRef.current.value === "" || destiantionRef.current.value === "") {
       alert("Please Enter Required Details!");
     }
@@ -228,6 +277,8 @@ function App() {
       waypoints: waypointsdata,
       provideRouteAlternatives: true,
     });
+
+   
 
     setoriginValue(originRef.current.value);
     setdestinationValue(destiantionRef.current.value);
@@ -248,8 +299,7 @@ function App() {
   }
 
   async function calculateRouteNewInitial() {
-    // alert("sdfkh");
-
+    
     // setoriginValue(localStorage.getItem("orginValue"))
     // setdestinationValue(localStorage.getItem("destinationValue"))
     // originRef = localStorage.getItem("orginValue")
@@ -323,6 +373,46 @@ function App() {
   }
 
   async function encodeLocationData() {
+    var listOfCoordinates = []
+    let response = directionInstance?.getDirections()
+    //console.log("directions instance ",response)
+    let legs = response?.routes[0].legs
+
+    for(var i=0;i<legs.length;i++)
+    {
+      //console.log(legs.length)
+      
+      if(legs.length===1)
+      {
+        //console.log("Enter here is the leg is 1")
+        var start_location = [legs[i]?.start_location.lat(),legs[i]?.start_location.lng()]
+        var end_location = [legs[i]?.end_location.lat(),legs[i]?.end_location.lng()]
+        listOfCoordinates.push(start_location,end_location)
+      }
+      else if(legs.length>1){
+        //console.log("Enter here is the leg is > 1")
+        var start_location = [legs[i]?.start_location.lat(),legs[i]?.start_location.lng()]
+        listOfCoordinates.push(start_location)
+        if(i===legs.length-1)
+        {
+          //console.log("Enter for the last leg")
+          var end_location = [legs[i]?.end_location.lat(),legs[i]?.end_location.lng()]
+          listOfCoordinates.push(end_location)
+        }
+      }
+      
+    }
+
+    //console.log("List of coordinates ::",listOfCoordinates)
+
+    let encoded2 = encode(listOfCoordinates, 5);
+    console.log("Encoded 2 ",listOfCoordinates)
+
+
+
+
+
+
     Geocode.fromAddress(localStorage.getItem("orginValue")).then(
       (response) => {
         const address1 = response.results[0].geometry.location;
@@ -343,7 +433,11 @@ function App() {
               new_data.push(value);
             });
 
-            let encoded = encode(encryting_data.concat(new_data), 5);
+
+            
+
+            let encoded = encode(encryting_data.concat(new_data), 20);
+            console.log("Encode data ",encryting_data.concat(new_data))
 
             const getStocksData = {
               url: "http://localhost:5000/location",
@@ -352,7 +446,7 @@ function App() {
                 "Content-Type": "application/json",
               },
               data: JSON.stringify({
-                location: encoded,
+                location: encoded2,
               }),
             };
             axios(getStocksData)
@@ -606,12 +700,97 @@ function App() {
           {directionsResponse && (
             <DirectionsRenderer
               directions={directionsResponse}
+              onLoad={onDirectionLoad}
               options={{
+                draggable:true,
                 polylineOptions: {
                   strokeOpacity: 12,
                   strokeColor: "#1641a6",
                   strokeWeight: 8,
                 },
+              }}
+              onDirectionsChanged = {() => {
+                if(directionInstance){
+                  console.log("Entering directions instance")
+                  let response =directionInstance?.getDirections();
+                  if (polyline) {
+                    // if polyline already exists, remove it from the map.
+                    polyline.setMap(null)
+                  }
+  
+                  if(response)
+                  {
+                     var path = google.maps.geometry.encoding.decodePath(response.routes[0].overview_polyline)
+                     
+    
+                      polyline = new google.maps.Polyline(
+                          {
+                            path:path,
+                            map : map
+                          }
+                        )
+                  }
+                  console.log("Directions instance ",response)
+                  
+                  var listOfCoordinates = []
+   
+                   //console.log("directions instance ",response)
+                  let legs = response?.routes[0].legs
+
+                   for(var i=0;i<legs.length;i++)
+                   {
+                   //console.log(legs.length)
+      
+                    if(legs.length===1){
+                    //console.log("Enter here is the leg is 1")
+                    var start_location = [legs[i]?.start_location.lat(),legs[i]?.start_location.lng()]
+                    var end_location = [legs[i]?.end_location.lat(),legs[i]?.end_location.lng()]
+                    listOfCoordinates.push(start_location,end_location)
+                    setoriginValue(legs[i]?.start_address)
+                    setdestinationValue(legs[i]?.end_address)
+                    }
+
+                     else if(legs.length>1){
+                    //console.log("Enter here is the leg is > 1")
+                     setoriginValue(legs[0]?.start_address)
+
+                     var start_location = [legs[i]?.start_location.lat(),legs[i]?.start_location.lng()]
+                     listOfCoordinates.push(start_location)
+
+                     if(i===legs.length-1){
+                    //console.log("Enter for the last leg")
+                    var end_location = [legs[i]?.end_location.lat(),legs[i]?.end_location.lng()]
+                    listOfCoordinates.push(end_location)
+                    setdestinationValue(legs[i]?.end_address)
+                  }
+
+                }
+              }
+              var waypoints1 = []
+              
+
+              for(var i=1;i<((listOfCoordinates.length)-1);i++)
+              {
+                var waypoint = {location:{lat:listOfCoordinates[i][0],lng:listOfCoordinates[i][1]}}
+                waypoints1.push(waypoint)
+              }
+
+
+                  //originValue
+                  //destinationValue
+                  //waypoints
+                  localStorage.setItem("waypoints",JSON.stringify(response))
+                  localStorage.setItem("originValue",response.routes[0].legs[0].start_address)
+                  localStorage.setItem("destinationValue",response.routes[0].legs[0].end_address)
+                  
+
+                }
+                else {
+                  console.log("Getting directions response")
+                  //console.log("Start latitiude2 ",directionsResponse.routes[0].legs[0].end_location.lat)
+                  //console.log("Start longitude2 ",directionsResponse?.routes[0]?.legs[0].end_location.lat)
+                }
+
               }}
             />
           )}
@@ -722,6 +901,7 @@ function App() {
               type="submit"
               onClick={async () => {
                 let newwaypoint = waypointsdata;
+                console.log("Waypoints list ",newwaypoint)
                 newwaypoint.pop();
                 const directionsService = new google.maps.DirectionsService();
                 const results = await directionsService.route({
