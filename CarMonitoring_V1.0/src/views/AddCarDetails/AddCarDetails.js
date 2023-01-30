@@ -26,6 +26,36 @@ export default function CustomEditComponent(props) {
         />
       )
     },
+    {
+      title: 'Rally name', field: 'rally',
+      editComponent: props => (
+        <input
+          type="text"
+          value={props.value}
+          onChange={e => props.onChange(e.target.value)}
+        />
+      )
+    },
+    {
+      title: 'Team name', field: 'team',
+      editComponent: props => (
+        <input
+          type="text"
+          value={props.value}
+          onChange={e => props.onChange(e.target.value)}
+        />
+      )
+    },
+    {
+      title: 'Cars participating', field: 'carId',
+      editComponent: props => (
+        <input
+          type="text"
+          value={props.value}
+          onChange={e => props.onChange(e.target.value)}
+        />
+      )
+    },
   
   ]);
 
@@ -74,7 +104,7 @@ export default function CustomEditComponent(props) {
 
   return (
     <MaterialTable
-      title="Car Details"
+      title="Car rally Details"
       columns={columns}
       data={data}
       editable={{
@@ -90,7 +120,10 @@ export default function CustomEditComponent(props) {
                 },
                 data: JSON.stringify({
                   "topic":newData.topic,
-                  "threshold":newData.threshold
+                  "threshold":newData.threshold,
+                  "rally":newData.rally,
+                  "team":newData.team,
+                  "carId":newData.carId
                 })
             }
             axios(getStocksData)

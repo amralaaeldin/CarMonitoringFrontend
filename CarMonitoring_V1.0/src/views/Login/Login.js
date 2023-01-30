@@ -87,7 +87,7 @@ export default function SignIn(props) {
       
 
    
-      props.history.push('./AddCarDetails');
+      props.history.push('./AddRallyDetails');
       localStorage.setItem("phonenumber", username);
       localStorage.setItem("waypoints",[])
       localStorage.setItem("orginValue","initial")

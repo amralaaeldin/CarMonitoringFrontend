@@ -30,7 +30,7 @@ const Routes = () => {
         component={AddCarDetails}
         exact
         layout={MainLayout}
-        path="/AddCarDetails"
+        path="/AddRallyDetails"
       />
 
       <RouteWithLayout

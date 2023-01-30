@@ -41,9 +41,14 @@ const Sidebar = props => {
 
   const pages = [
     {
-      title: 'Add Car Details',
-      href: '/AddCarDetails',
+      title: 'Add rally Details',
+      href: '/AddRallyDetails',
       icon: <Contact />
+    },
+    {
+      title: 'Route configuration',
+      href: '/CarMonitoring',
+      icon: <Notifications />
     },
     {
       title: 'Car Monitoring',
