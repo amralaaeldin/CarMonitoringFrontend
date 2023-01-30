@@ -213,7 +213,7 @@ function App() {
 
           if(myPosition,polyline)
           {
-            var isFollowing = google.maps.geometry.poly.isLocationOnEdge(myPosition,polyline,0.00001) //0.00001
+            var isFollowing = google.maps.geometry.poly.isLocationOnEdge(myPosition,polyline,0.001) //0.00001
             setisFollowing(isFollowing)
           }
           
@@ -223,7 +223,14 @@ function App() {
           //if(isFollowing===false)
           if(isFollowing===false)
           {
+            /* setTimeout(() => {
+              console.log("The car is not follwong the path")
+              alert("The car is not following the path")
+            }, 10000) */
+
             alert("The car is not following the path")
+            console.log("The car is not following the path")
+            
           }
 
           
@@ -308,7 +315,7 @@ function App() {
     setDirectionsResponse(JSON.parse(localStorage.getItem("waypoints")));
     // setorgincenter(JSON.parse(localStorage.getItem("orginCenter")));
     // originRef.current = "VGP"
-    setoriginValue(localStorage.getItem("orginValue"));
+    setoriginValue(localStorage.getItem("originValue"));
     setdestinationValue(localStorage.getItem("destinationValue"));
 
     // setdestinationcenter(JSON.parse(localStorage.getItem("destinationCenter")));
@@ -555,7 +562,9 @@ function App() {
 
               setflag(flag + 1);
               setgetflag(getflag + 1);
-            } else {
+            } 
+            
+            else {
               const { latLng } = coord;
               const lat = latLng.lat();
               const lng = latLng.lng();
@@ -730,24 +739,26 @@ function App() {
                           }
                         )
                   }
-                  console.log("Directions instance ",response)
+                  
+
+
                   
                   var listOfCoordinates = []
    
-                   //console.log("directions instance ",response)
                   let legs = response?.routes[0].legs
 
-                   for(var i=0;i<legs.length;i++)
-                   {
-                   //console.log(legs.length)
-      
+                   for(var i=0;i<legs.length;i++){
+
                     if(legs.length===1){
                     //console.log("Enter here is the leg is 1")
                     var start_location = [legs[i]?.start_location.lat(),legs[i]?.start_location.lng()]
                     var end_location = [legs[i]?.end_location.lat(),legs[i]?.end_location.lng()]
                     listOfCoordinates.push(start_location,end_location)
+                    
                     setoriginValue(legs[i]?.start_address)
                     setdestinationValue(legs[i]?.end_address)
+
+                    
                     }
 
                      else if(legs.length>1){
@@ -779,6 +790,9 @@ function App() {
                   //originValue
                   //destinationValue
                   //waypoints
+                  console.log("response ",response.routes[0].legs[0].end_address)
+
+
                   localStorage.setItem("waypoints",JSON.stringify(response))
                   localStorage.setItem("originValue",response.routes[0].legs[0].start_address)
                   localStorage.setItem("destinationValue",response.routes[0].legs[0].end_address)
@@ -787,8 +801,9 @@ function App() {
                 }
                 else {
                   console.log("Getting directions response")
-                  //console.log("Start latitiude2 ",directionsResponse.routes[0].legs[0].end_location.lat)
-                  //console.log("Start longitude2 ",directionsResponse?.routes[0]?.legs[0].end_location.lat)
+
+                  //var path = google.maps.geometry.encoding.decodePath(directionsResponse.routes[0].overview_polyline)
+                     
                 }
 
               }}
