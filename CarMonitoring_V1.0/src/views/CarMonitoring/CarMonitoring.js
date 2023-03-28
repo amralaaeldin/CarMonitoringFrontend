@@ -46,6 +46,8 @@ function App() {
   const [locationStoredData, setlocationStoredData] = useState([]);
   const [focusFlag, setFocusFlag] = useState(false);
   const [isFollowing,setisFollowing] = useState(false);
+  const [rallyData, setRallyData] = useState([]);
+  
 
 
   const [orgincenter, setorgincenter] = useState({
@@ -85,6 +87,7 @@ function App() {
       }
 
       getLocationData();
+      //getRallyData();
     }
 
      if (focusFlag) {
@@ -135,6 +138,43 @@ function App() {
         }
       });
   }
+
+
+  async function getRallyData() {
+
+    const getRallyData = {
+      url: 'http://localhost:5000/topic',
+      method: 'GET',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      // data: JSON.stringify(getStocksDataid)
+  }
+  axios(getRallyData)
+      .then(response => {
+
+        var rallyData = response.data.data
+        console.log("Rally data ",rallyData)
+      })
+      setRallyData(rallyData)
+      
+      .catch(function (e) {
+
+          console.log(e.message)
+          if (e.message === 'Network Error') {
+              alert("No Internet Found. Please check your internet connection")
+          }
+          else {
+              alert("Sorry, something went wrong. Please try again after sometime. If the issue still persists contact support.")
+          }
+
+      });
+    
+  }
+
+
+
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyCAV1aQa73wNEK3u2DYil1s3EseuXVnjcI",
     libraries: ["places"],
@@ -306,7 +346,6 @@ function App() {
   }
 
   async function calculateRouteNewInitial() {
-    
     // setoriginValue(localStorage.getItem("orginValue"))
     // setdestinationValue(localStorage.getItem("destinationValue"))
     // originRef = localStorage.getItem("orginValue")
@@ -325,17 +364,16 @@ function App() {
     setgetflag(getflag + 1);
   }
 
-  async function decodeLocationData(encoded) {
+ async function decodeLocationData(encoded) {
+    console.log("Entering the decode method ",encoded)
     let dec = decode(encoded, 5);
-    let latitude = "";
-    let longitude = [];
+    console.log("Decoded ",dec)
     let wayp = [];
     dec.map((data, i) => {
       if (i == 0) {
         Geocode.fromLatLng(dec[i][0], dec[i][1]).then(
           (response) => {
             const address4 = response.results[0].formatted_address;
-
             localStorage.setItem("address4", address4);
           },
           (error) => {
@@ -359,8 +397,8 @@ function App() {
       }
     });
     console.log("sdkfjhdsf");
-    console.log(localStorage.getItem("address4"));
-    console.log(localStorage.getItem("address5"));
+    //console.log(localStorage.getItem("address4"));
+    //console.log(localStorage.getItem("address5"));
     console.log(wayp);
     console.log("sdkfjhdsf");
     const directionsService = new google.maps.DirectionsService();
@@ -377,12 +415,26 @@ function App() {
     setDirectionsResponse(results);
     setflag(flag + 1);
     setgetflag(getflag + 1);
-  }
+  } 
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
 
   async function encodeLocationData() {
     var listOfCoordinates = []
     let response = directionInstance?.getDirections()
-    //console.log("directions instance ",response)
+    
     let legs = response?.routes[0].legs
 
     for(var i=0;i<legs.length;i++)
@@ -801,9 +853,6 @@ function App() {
                 }
                 else {
                   console.log("Getting directions response")
-
-                  //var path = google.maps.geometry.encoding.decodePath(directionsResponse.routes[0].overview_polyline)
-                     
                 }
 
               }}
@@ -823,7 +872,7 @@ function App() {
       >
         <HStack spacing={2} justifyContent="space-between">
           <Box flexGrow={1}>
-            <Autocomplete>
+           {/*  <Autocomplete>
               <Input
                 style={{
                   padding: 10,
@@ -841,10 +890,10 @@ function App() {
                   setdestinationValue(destiantionRef.current.value);
                 }}
               />
-            </Autocomplete>
+            </Autocomplete> */}
           </Box>
           <Box flexGrow={1}>
-            <Autocomplete>
+            {/* <Autocomplete>
               <Input
                 style={{
                   padding: 10,
@@ -863,9 +912,9 @@ function App() {
                   console.log(originRef.current);
                 }}
               />
-            </Autocomplete>
+            </Autocomplete> */}
           </Box>
-          <Button
+          {/* <Button
             colorScheme="pink"
             type="submit"
             onClick={calculateRoute}
@@ -878,7 +927,7 @@ function App() {
             }}
           >
             SUBMIT
-          </Button>
+          </Button> */}
           <Box flexGrow={1}>
             <Input
               style={{
@@ -1001,13 +1050,13 @@ function App() {
               onChange={(e) => {
                 decodeLocationData(e.value);
               }}
-              //  value={defaultOption}
+              //value={defaultOption}
               placeholder="SELECT LOCATION"
               style={{ borderRadius: 20 }}
             />
           ) : null}
 
-          <Button
+          {/* <Button
             colorScheme="pink"
             type="submit"
             onClick={() => {
@@ -1037,7 +1086,7 @@ function App() {
             }}
           >
             SAVE LOCATION
-          </Button>
+          </Button> */}
         </HStack>
       </Box>
     </Flex>

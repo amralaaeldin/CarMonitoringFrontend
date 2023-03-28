@@ -47,7 +47,7 @@ const Sidebar = props => {
     },
     {
       title: 'Route configuration',
-      href: '/CarMonitoring',
+      href: '/RouteConfiguration',
       icon: <Notifications />
     },
     {

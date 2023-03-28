@@ -7,7 +7,8 @@ import { Main as MainLayout, Minimal as MinimalLayout } from './layouts';
 import {
   AddCarDetails,
   CarMonitoring,
-  Login
+  Login,
+  RouteConfiguration
 } from './views';
 
 const Routes = () => {
@@ -31,6 +32,13 @@ const Routes = () => {
         exact
         layout={MainLayout}
         path="/AddRallyDetails"
+      />
+
+      <RouteWithLayout
+        component={RouteConfiguration}
+        exact
+        layout={MainLayout}
+        path="/RouteConfiguration"
       />
 
       <RouteWithLayout
